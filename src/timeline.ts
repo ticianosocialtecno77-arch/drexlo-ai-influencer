@@ -1,6 +1,8 @@
 // Tiempos reales de la narración (generados por scripts/build_audio_timeline.py).
 // Si se regenera el audio, volver a ejecutar ese script y actualizar este archivo.
 
+// Remotion sirve los assets estáticos desde public/, así que la narración
+// combinada vive en public/audio/ y se referencia con staticFile().
 export const NARRATION_AUDIO = "audio/drexlo_narration.mp3";
 
 export const TOTAL_SECONDS = 49.008;

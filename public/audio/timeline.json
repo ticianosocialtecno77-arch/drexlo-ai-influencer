@@ -1,0 +1,43 @@
+{
+  "gap": 0.45,
+  "tail": 0.9,
+  "totalSeconds": 49.008,
+  "scenes": [
+    {
+      "id": "scene1",
+      "start": 0.0,
+      "end": 3.456
+    },
+    {
+      "id": "scene2",
+      "start": 3.906,
+      "end": 9.714
+    },
+    {
+      "id": "scene3",
+      "start": 10.164,
+      "end": 17.028
+    },
+    {
+      "id": "scene4",
+      "start": 17.478,
+      "end": 23.886
+    },
+    {
+      "id": "scene5",
+      "start": 24.336,
+      "end": 30.888
+    },
+    {
+      "id": "scene6",
+      "start": 31.338,
+      "end": 39.594
+    },
+    {
+      "id": "scene7",
+      "start": 40.044,
+      "end": 48.108
+    }
+  ],
+  "audio": "audio/drexlo_narration.mp3"
+}
