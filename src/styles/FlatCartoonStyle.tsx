@@ -129,12 +129,27 @@ export const FlatCartoonStyle: React.FC = () => {
   const end = durationInFrames - 1;
   const t = frame / CARTOON_FPS;
 
+  // ---- Micro-vida: parpadeo cada ~3 s y respiración del tórax.
+  // La secuencia es fija (determinista) para que el render sea idéntico.
+  const blinkCycle = frame % 90;
+  const blink = interpolate(blinkCycle, [0, 3, 7, 10], [0, 1, 1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const breathe = 1 + Math.sin(t * Math.PI * 0.8) * 0.02;
+
   // ---- Ciclo del personaje: se inclina a investigar y se yergue ----
   const loop = (frame % LOOP_FRAMES) / LOOP_FRAMES;
   const curious = Math.sin(loop * Math.PI * 2); // -1 (anhela) .. 1 (descubre)
   const lean = curious * 6; // grados
   const crouch = Math.max(0, -curious) * 18; // px
   const bob = Math.sin(t * Math.PI * 1.5) * 5;
+
+  // ---- Squash & stretch derivado del mismo ciclo: al bajar se achata
+  // (más ancho y bajo), al estirarse se alarga. Arranca rápido y frena suave.
+  const squashDrive = Math.max(0, -curious) * 0.06 - Math.max(0, curious) * 0.03;
+  const bodyScaleX = 1 + squashDrive;
+  const bodyScaleY = 1 - squashDrive;
 
   // Brazos: bajan al inclinarse, se abren al descubrir.
   const armLift = interpolate(curious, [-1, 1], [0, 1]);
@@ -297,7 +312,10 @@ export const FlatCartoonStyle: React.FC = () => {
               opacity={0.2}
             />
 
-            <g transform={`translate(${PX} ${BODY_Y + crouch - bob}) rotate(${lean})`}>
+            {/* Squash & stretch con origen en los pies */}
+            <g
+              transform={`translate(${PX} ${BODY_Y + crouch - bob}) rotate(${lean}) scale(${bodyScaleX} ${bodyScaleY})`}
+            >
               {/* Piernas */}
               <rect x={-76} y={-300} width={64} height={300} rx={28} fill={SHORTS} stroke={INK} strokeWidth={OUTLINE} />
               <rect x={12} y={-300} width={64} height={300} rx={28} fill={SHORTS} stroke={INK} strokeWidth={OUTLINE} />
@@ -305,8 +323,10 @@ export const FlatCartoonStyle: React.FC = () => {
               <rect x={-94} y={-46} width={100} height={46} rx={23} fill={WHITE} stroke={INK} strokeWidth={OUTLINE} />
               <rect x={2} y={-46} width={100} height={46} rx={23} fill={WHITE} stroke={INK} strokeWidth={OUTLINE} />
 
-              {/* Torso */}
-              <rect x={-112} y={-590} width={224} height={300} rx={56} fill={SHIRT} stroke={INK} strokeWidth={OUTLINE} />
+              {/* Torso: respira (el tórax expande ~2%) */}
+              <g transform={`translate(0 -440) scale(${breathe} ${breathe}) translate(0 440)`}>
+                <rect x={-112} y={-590} width={224} height={300} rx={56} fill={SHIRT} stroke={INK} strokeWidth={OUTLINE} />
+              </g>
 
               {/* Brazos: rotan desde el hombro */}
               <g transform={`rotate(${leftArm} -98 -560)`}>
@@ -359,6 +379,19 @@ export const FlatCartoonStyle: React.FC = () => {
                   strokeWidth={OUTLINE}
                   strokeLinecap="round"
                 />
+                {/* Parpadeo: un párpado del color de la piel que baja sobre el visor */}
+                {blink > 0.01 ? (
+                  <g>
+                    <rect
+                      x={visor.x - 8}
+                      y={visor.y - 8}
+                      width={visor.w + 16}
+                      height={(visor.h + 12) * blink}
+                      rx={(visor.r + 4) * (1 - blink)}
+                      fill={SKIN}
+                    />
+                  </g>
+                ) : null}
               </g>
             </g>
 

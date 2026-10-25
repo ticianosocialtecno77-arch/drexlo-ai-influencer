@@ -25,6 +25,7 @@ const H = 1920;
 
 const STROKE = 22;
 const WHITE = "#FFFFFF";
+const GLOW = "#9FD8FF";
 const BLACK = "#000000";
 
 // El personaje camina ~48.4 px por ciclo de 24 frames → sin deslizamiento.
@@ -281,44 +282,85 @@ export const StickFigureStyle: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
+  // Escena completa (personajes + suelo). Se dibuja 3 veces: dos capas
+  // desenfocadas para el glow neón y una nítida arriba.
+  const scenery = (
+    <>
+      <g>{floorMarks}</g>
+      <line
+        x1={-1200}
+        y1={HORIZON_Y}
+        x2={3040}
+        y2={HORIZON_Y}
+        stroke={WHITE}
+        strokeWidth={12}
+        strokeLinecap="round"
+      />
+      <StickFigure
+        x={backdropA}
+        frame={frame}
+        opacity={0.55}
+        scale={0.82}
+        walking
+        waving={false}
+      />
+      <StickFigure
+        x={backdropB}
+        frame={frame + 7}
+        opacity={0.78}
+        scale={0.92}
+        walking
+        waving={false}
+      />
+      <StickFigure
+        x={walkerFinal}
+        frame={frame}
+        opacity={1}
+        scale={1}
+        walking={!stopsWalking}
+        waving={stopsWalking}
+      />
+    </>
+  );
+
   return (
     <AbsoluteFill style={{ backgroundColor: BLACK, overflow: "hidden" }}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
+        {/* Glow neón: dos capas desenfocadas debajo de la escena nítida.
+            Reemplaza al shadowBlur de canvas: mismo look y cada frame sigue
+            siendo determinista. */}
+        <defs>
+          <filter id="neonWide" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="26" />
+          </filter>
+          <filter id="neonTight" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="8" />
+          </filter>
+          <radialGradient id="haloFloor" cx="50%" cy="100%" r="75%">
+            <stop offset="0%" stopColor={GLOW} stopOpacity={0.28} />
+            <stop offset="100%" stopColor={GLOW} stopOpacity={0} />
+          </radialGradient>
+        </defs>
+
+        {/* Halo pulsante detrás del personaje */}
+        <ellipse
+          cx={W / 2 + 40}
+          cy={H * 0.72}
+          rx={420}
+          ry={520}
+          fill="url(#haloFloor)"
+          opacity={0.55 + Math.sin(frame / 14) * 0.18}
+        />
+
+        <g filter="url(#neonWide)" opacity={0.55} transform={camTransform}>
+          {scenery}
+        </g>
+        <g filter="url(#neonTight)" opacity={0.45} transform={camTransform}>
+          {scenery}
+        </g>
+
         <g transform={camTransform}>
-          <g>{floorMarks}</g>
-          <line
-            x1={-1200}
-            y1={HORIZON_Y}
-            x2={3040}
-            y2={HORIZON_Y}
-            stroke={WHITE}
-            strokeWidth={12}
-            strokeLinecap="round"
-          />
-          <StickFigure
-            x={backdropA}
-            frame={frame}
-            opacity={0.55}
-            scale={0.82}
-            walking
-            waving={false}
-          />
-          <StickFigure
-            x={backdropB}
-            frame={frame + 7}
-            opacity={0.78}
-            scale={0.92}
-            walking
-            waving={false}
-          />
-          <StickFigure
-            x={walkerFinal}
-            frame={frame}
-            opacity={1}
-            scale={1}
-            walking={!stopsWalking}
-            waving={stopsWalking}
-          />
+          {scenery}
         </g>
       </svg>
 

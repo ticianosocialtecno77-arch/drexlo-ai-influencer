@@ -42,12 +42,53 @@ const SATELLITES = Array.from({ length: 12 }, (_, i) => {
   };
 });
 
-/** Cámara: dolly lento hacia el modelo, sin controles interactivos. */
-const CameraRig: React.FC<{ z: number }> = ({ z }) => {
+/** Cámara: slow dolly (acercamiento + paneo lateral lento), sin controles. */
+const CameraRig: React.FC<{ z: number; x: number }> = ({ z, x }) => {
   const camera = useThree((s) => s.camera);
-  camera.position.set(0, 0.75, z);
-  camera.lookAt(0, -0.12, 0);
+  camera.position.set(x, 0.8, z);
+  camera.lookAt(-x * 0.35, -0.12, 0);
   return null;
+};
+
+// Partículas flotando en bucle: posiciones fijas (deterministas), movimiento por frame.
+const PARTICLES = Array.from({ length: 40 }, (_, i) => {
+  const g = (i * 0.6180339887) % 1; // secuencia áurea, sin Math.random
+  return {
+    x: (g - 0.5) * 11,
+    y: ((i * 0.37) % 1) * 4.5 - 1,
+    z: ((i * 0.73) % 1) * 7 - 3.5,
+    size: 0.018 + ((i * 0.21) % 1) * 0.04,
+    speed: 0.25 + ((i * 0.13) % 1) * 0.5,
+    phase: (i * 0.9) % (Math.PI * 2),
+  };
+});
+
+const Particles: React.FC<{ frame: number; fps: number }> = ({
+  frame,
+  fps,
+}) => {
+  const t = frame / fps;
+  return (
+    <group>
+      {PARTICLES.map((p, i) => (
+        <mesh
+          key={i}
+          position={[
+            p.x + Math.sin(t * p.speed + p.phase) * 0.35,
+            p.y + Math.sin(t * p.speed * 0.7 + p.phase) * 0.5,
+            p.z + Math.cos(t * p.speed + p.phase) * 0.35,
+          ]}
+        >
+          <icosahedronGeometry args={[p.size, 0]} />
+          <meshBasicMaterial
+            color={i % 3 === 0 ? "#FFC98A" : "#9FB4D8"}
+            transparent
+            opacity={0.45 + ((i * 0.17) % 1) * 0.35}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
 };
 
 const LowPolyCore: React.FC<{ frame: number; fps: number }> = ({
@@ -191,8 +232,13 @@ export const LowPoly3DStyle: React.FC = () => {
 
   const end = durationInFrames - 1;
 
-  // Dolly lento.
+  // Slow dolly: se acerca y panea de izquierda a derecha, como espiando un diorama.
   const cameraZ = interpolate(frame, [0, end], [7.4, 6.2], {
+    easing: Easing.inOut(Easing.sin),
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const cameraX = interpolate(frame, [0, end], [-0.85, 0.7], {
     easing: Easing.inOut(Easing.sin),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -222,11 +268,12 @@ export const LowPoly3DStyle: React.FC = () => {
         height={H}
         shadows
         gl={{ antialias: true, alpha: false }}
-        camera={{ fov: 45, position: [0, 0.75, cameraZ], near: 0.1, far: 60 }}
+        camera={{ fov: 45, position: [cameraX, 0.8, cameraZ], near: 0.1, far: 60 }}
         style={{ backgroundColor: DARK }}
       >
-        <CameraRig z={cameraZ} />
+        <CameraRig z={cameraZ} x={cameraX} />
         <LowPolyCore frame={frame} fps={fps} />
+        <Particles frame={frame} fps={fps} />
       </ThreeCanvas>
 
       {/* Viñeta teatral */}
