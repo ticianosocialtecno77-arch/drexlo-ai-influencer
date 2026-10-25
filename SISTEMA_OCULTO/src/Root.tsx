@@ -16,6 +16,11 @@ import {
   CARTOON_DURATION,
   CARTOON_FPS,
 } from "./styles/FlatCartoonStyle";
+import {
+  AgenciaHookPreview,
+  AGENCIA_PREVIEW_DURATION,
+  AGENCIA_PREVIEW_FPS,
+} from "./agencia/Scene1Hook";
 
 // Pruebas de estilo: misma frase ("Descubre el secreto"), 3 estilos, 5 s cada una.
 // Render en la nube con coldframe:
@@ -55,6 +60,17 @@ export const RemotionRoot: React.FC = () => {
         component={FlatCartoonStyle}
         durationInFrames={CARTOON_DURATION}
         fps={CARTOON_FPS}
+        {...STYLE_SIZE}
+      />
+
+      {/* DREXLO AGENCIA IA — preview de la escena 1 (7 s), para aprobar
+          la direccion de arte antes de hacer el short completo de 40-45 s.
+          Render: coldframe render AgenciaPreviewHook --name agencia-preview-hook.mp4 --out MIS_VIDEOS/2_Agencia_IA */}
+      <Composition
+        id="AgenciaPreviewHook"
+        component={AgenciaHookPreview}
+        durationInFrames={AGENCIA_PREVIEW_DURATION}
+        fps={AGENCIA_PREVIEW_FPS}
         {...STYLE_SIZE}
       />
     </>
