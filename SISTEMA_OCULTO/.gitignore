@@ -1,0 +1,16 @@
+# Dependencias
+node_modules/
+
+# Salidas de render (no se suben al repo público)
+out/
+renders/
+*.mp4
+*.webm
+*.mov
+
+# Librerías de Python instaladas localmente para el TTS
+.pylibs/
+
+# Temporales
+.DS_Store
+*.log

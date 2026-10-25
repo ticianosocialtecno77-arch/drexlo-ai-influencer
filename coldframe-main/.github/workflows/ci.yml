@@ -1,0 +1,67 @@
+# Quick checks of the CLI on every push: it parses, prints help, rejects bad input,
+# and `init` copies the workflow. Nothing here signs in to GitHub or starts a render.
+
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  cli:
+    name: CLI (Node ${{ matrix.node }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+        node: ["18", "22"]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Check the CLI
+        run: |
+          set -u
+          CLI="$PWD/bin/coldframe.mjs"
+          fail() { echo "::error::$1"; exit 1; }
+          # expect <exit code> <text in output> -- <args>
+          expect() {
+            code=$1; text=$2; shift 3
+            out=$(node "$CLI" "$@" 2>&1) && got=0 || got=$? # the step runs with -e
+            [ "$got" = "$code" ] || fail "coldframe $* exited $got, expected $code: $out"
+            case "$out" in *"$text"*) ;; *) fail "coldframe $* did not print \"$text\": $out" ;; esac
+            echo "ok: coldframe $*"
+          }
+
+          node --check "$CLI"
+          expect 0 "coldframe setup" -- --help
+          expect 0 "$(node -p 'require("./package.json").version')" -- -v
+          expect 1 'unknown command "nope"' -- nope
+          expect 1 "usage: coldframe render" -- render
+          expect 1 "--chunks must be a whole number" -- render Comp --chunks 50
+          expect 1 "--props must be JSON" -- render Comp --props '{bad'
+          expect 1 "--chunks needs a value" -- render Comp --chunks
+          expect 1 "unknown option --chunk." -- render Comp --chunk 4
+          expect 1 "isn't a run id" -- download nope
+
+          # init copies the workflow into a fresh project, and leaves an existing one alone.
+          dir=$(mktemp -d); cd "$dir"; echo '{}' > package.json
+          expect 0 "added .github" -- init
+          cmp .github/workflows/coldframe.yml "$GITHUB_WORKSPACE/templates/coldframe.yml" || fail "init copied the wrong file"
+          expect 0 "already there" -- init
+
+          # --props reads a JSON file too.
+          echo '[1]' > props.json
+          expect 1 "--props must be a JSON object" -- render Comp --props props.json
+
+          # A project in a subfolder gets the workflow at the top of the repo, pointed at that folder.
+          dir=$(mktemp -d); cd "$dir"; git init -q; mkdir video; cd video; echo '{}' > package.json
+          expect 0 "added ../.github" -- init
+          grep -q '^      project-dir: video$' ../.github/workflows/coldframe.yml || fail "init did not set project-dir"

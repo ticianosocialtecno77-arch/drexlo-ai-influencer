@@ -14,3 +14,8 @@ renders/
 # Temporales
 .DS_Store
 *.log
+
+# Materiales de trabajo (videos, componentes sueltos) y respaldos
+MIS_VIDEOS/
+_BACKUP_PRE_ORDEN_*/
+

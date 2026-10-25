@@ -28,6 +28,6 @@ jobs:
       chunks: ${{ fromJSON(inputs.chunks) }}
       props: ${{ inputs.props }}
       output-name: ${{ inputs.output-name }}
-      # project-dir: .        # folder with package.json, if not the repo root
+      project-dir: SISTEMA_OCULTO # el motor de Remotion vive aca
       # gl: swangle           # WebGL on CPU runners; "angle" or "egl" if you know better
       # chunk-timeout: 60     # minutes before a stuck machine is stopped

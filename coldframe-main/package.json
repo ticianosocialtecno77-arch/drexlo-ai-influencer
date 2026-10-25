@@ -1,0 +1,13 @@
+{
+  "name": "coldframe",
+  "version": "1.2.0",
+  "description": "Render Remotion videos on free cloud machines: parallel GitHub Actions renders, every frame checked, Claude Code skills for making the videos.",
+  "type": "module",
+  "bin": { "coldframe": "bin/coldframe.mjs" },
+  "files": ["bin", "templates", ".claude/skills", "sfx"],
+  "keywords": ["remotion", "render", "github-actions", "video", "distributed-rendering"],
+  "repository": "github:Razee4315/coldframe",
+  "homepage": "https://razee4315.github.io/coldframe/",
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}
