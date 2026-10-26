@@ -139,8 +139,8 @@ const Envelope: React.FC<{x: number; y: number; s?: number; rot?: number; open?:
   <g transform={'translate(' + x + ' ' + y + ') rotate(' + rot + ') scale(' + sc + ')'}>
     <rect x={-150} y={-100} width={300} height={200} rx={12} fill="#fff" stroke={INK} strokeWidth={SW} />
     <path d="M -150 -100 L 0 30 L 150 -100" fill="none" stroke={INK} strokeWidth={6} strokeLinejoin="round" />
-    <g transform={'translate(0 ' + (-100 - open * 70) + ') rotate(' + (-open * 18) + ')'}>
-      <path d="M -150 -100 L 150 -100 L 0 30 Z" fill="#eef3f9" stroke={INK} strokeWidth={6} strokeLinejoin="round" />
+    <g transform={'translate(0 -100) rotate(' + (-open * 34) + ')'}>
+      <path d="M -150 0 L 150 0 L 0 130 Z" fill="#eef3f9" stroke={INK} strokeWidth={6} strokeLinejoin="round" />
     </g>
     {check > 0 && (
       <g transform={'translate(112 -70) scale(' + check + ')'}>
@@ -174,14 +174,18 @@ const Chip: React.FC<{x: number; y: number; p: number; color: string; label: str
   </g>
 );
 
-const CheckChip: React.FC<{x: number; y: number; p: number; label: string}> = ({x, y, p, label}) => (
-  <g transform={'translate(' + x + ' ' + y + ') scale(' + p + ')'} opacity={Math.min(1, Math.max(0, p * 2))}>
-    <rect x={-300} y={-52} width={600} height={104} rx={52} fill="#fff" stroke={INK} strokeWidth={SW} />
-    <circle cx={-238} cy={0} r={38} fill={GREEN} stroke={INK} strokeWidth={6} />
-    <path d="M -256 -2 L -242 14 L -220 -14" stroke="#fff" strokeWidth={11} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    <text x={30} y={16} textAnchor="middle" fontFamily="Poppins" fontWeight={800} fontSize={42} fill={INK}>{label}</text>
-  </g>
-);
+const CheckChip: React.FC<{x: number; y: number; p: number; label: string}> = ({x, y, p, label}) => {
+  const fs = label.length > 16 ? 32 : 38;
+  const tw = Math.min(400, label.length * fs * 0.66);
+  return (
+    <g transform={'translate(' + x + ' ' + y + ') scale(' + p + ')'} opacity={Math.min(1, Math.max(0, p * 2))}>
+      <rect x={-300} y={-52} width={600} height={104} rx={52} fill="#fff" stroke={INK} strokeWidth={SW} />
+      <circle cx={-238} cy={0} r={38} fill={GREEN} stroke={INK} strokeWidth={6} />
+      <path d="M -256 -2 L -242 14 L -220 -14" stroke="#fff" strokeWidth={11} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <text x={58} y={fs * 0.36} textAnchor="middle" textLength={tw} lengthAdjust="spacingAndGlyphs" fontFamily="Poppins" fontWeight={800} fontSize={fs} fill={INK}>{label}</text>
+    </g>
+  );
+};
 
 // --------------------------------------------------------------- escena 1 ---
 // HOOK: El Curioso mira alrededor con una lupa gigante. Aparece el titulo.
@@ -232,7 +236,7 @@ const SceneHook: React.FC = () => {
             <Character x={830} y={1090} s={0.42} suit="#6fae7a" hair="#6b4a2f" hairStyle="side" mouth="grin" brow={0.5}
               armR={f > s(foundAt) ? 150 : 20} armL={12} look={[-0.2, -0.2]} blinkSeed={2} />
             {f > s(foundAt) && (
-              <g transform={'translate(700 ' + (770 + Math.sin(f / 6) * 6) + ') scale(' + found + ')'}>
+              <g transform={'translate(862 ' + (742 + Math.sin(f / 6) * 6) + ') scale(' + found + ')'}>
                 <rect x={-112} y={-40} width={224} height={80} rx={40} fill={YELLOW} stroke={INK} strokeWidth={6} />
                 <text x={0} y={14} textAnchor="middle" fontFamily="Luckiest Guy" fontSize={50} fill={INK}>CLIENT</text>
               </g>
@@ -350,17 +354,27 @@ const SceneScreen: React.FC = () => {
           <path d="M -120 -120 L 120 120 M 120 -120 L -120 120" stroke={RED} strokeWidth={40} strokeLinecap="round" />
           <path d="M -120 -120 L 120 120 M 120 -120 L -120 120" stroke="#fff" strokeWidth={12} strokeLinecap="round" opacity={0.5} />
         </g>
-        {/* anotaciones */}
-        <g transform={'scale(' + cp1 + ')'} opacity={Math.min(1, cp1 * 2)}>
-          <path d={'M ' + (300 * (1 / Math.max(cp1, 0.001))) + ' ' + (620 * (1 / Math.max(cp1, 0.001))) + ' L 190 470'} stroke={INK} strokeWidth={6} />
-          <rect x={-140} y={-238} width={460} height={82} rx={16} fill={YELLOW} stroke={INK} strokeWidth={6} />
-          <text x={90} y={-182} textAnchor="middle" fontFamily="Poppins" fontWeight={800} fontSize={34} fill={INK}>CONFUSING BOOKING</text>
-        </g>
-        <g transform={'scale(' + cp + ')'} opacity={Math.min(1, cp * 2)}>
-          <path d={'M ' + (980 * (1 / Math.max(cp, 0.001))) + ' ' + (790 * (1 / Math.max(cp, 0.001))) + ' L 1090 940'} stroke={INK} strokeWidth={6} />
-          <rect x={600} y={-176} width={470} height={82} rx={16} fill={YELLOW} stroke={INK} strokeWidth={6} />
-          <text x={835} y={-120} textAnchor="middle" fontFamily="Poppins" fontWeight={800} fontSize={34} fill={INK}>WEAK WEBSITE COPY</text>
-        </g>
+        {/* anotaciones (fuera de la pantalla, con linea guia) */}
+        <Pop at={xAt + 0.15} damping={9}>
+          {(p) => (
+            <g transform={'translate(320 452) scale(' + p + ')'} opacity={Math.min(1, p * 2)}>
+              <path d="M 120 52 L 208 186" stroke={INK} strokeWidth={7} />
+              <circle cx={210} cy={192} r={12} fill={YELLOW} stroke={INK} strokeWidth={5} />
+              <rect x={-256} y={-56} width={512} height={112} rx={56} fill={YELLOW} stroke={INK} strokeWidth={6} />
+              <text x={0} y={13} textAnchor="middle" textLength={420} lengthAdjust="spacingAndGlyphs" fontFamily="Poppins" fontWeight={800} fontSize={36} fill={INK}>CONFUSING BOOKING</text>
+            </g>
+          )}
+        </Pop>
+        <Pop at={copyAt} damping={9}>
+          {(p) => (
+            <g transform={'translate(830 452) scale(' + p + ')'} opacity={Math.min(1, p * 2)}>
+              <path d="M -82 52 L -186 160" stroke={INK} strokeWidth={7} />
+              <circle cx={-188} cy={166} r={12} fill={YELLOW} stroke={INK} strokeWidth={5} />
+              <rect x={-240} y={-56} width={480} height={112} rx={56} fill={YELLOW} stroke={INK} strokeWidth={6} />
+              <text x={0} y={11} textAnchor="middle" textLength={380} lengthAdjust="spacingAndGlyphs" fontFamily="Poppins" fontWeight={800} fontSize={32} fill={INK}>WEAK WEBSITE COPY</text>
+            </g>
+          )}
+        </Pop>
         <Character x={900} y={1300} s={0.78} {...CURIOSO} flip mouth="flat" brow={-0.4} armR={132} armL={12} look={[-0.9, 0.1]} blinkSeed={4} />
       </svg>
     </Cam>
@@ -470,7 +484,7 @@ const SceneFollow: React.FC = () => {
         <rect width={1080} height={1920} fill="#dfe9f6" />
         <rect y={1420} width={1080} height={500} fill="#c3d3e6" />
         {/* no spam: pila de sobres tachada */}
-        <g transform={'translate(200 560) scale(' + noSpam + ')'} opacity={Math.min(1, noSpam * 2)}>
+        <g transform={'translate(252 580) scale(' + noSpam + ')'} opacity={Math.min(1, noSpam * 2)}>
           {Array.from({length: 5}).map((_, i) => (
             <g key={i} transform={'translate(' + ((i % 2) * 16 - 8) + ' ' + (-i * 34) + ') rotate(' + ((i - 2) * 5) + ')'}>
               <rect x={-120} y={-78} width={240} height={156} rx={9} fill="#fff" stroke={INK} strokeWidth={6} />
@@ -480,8 +494,8 @@ const SceneFollow: React.FC = () => {
           <circle r={172} fill="none" stroke={RED} strokeWidth={26} />
           <path d="M -122 -122 L 122 122" stroke={RED} strokeWidth={26} strokeLinecap="round" />
           <g transform="translate(0 250)">
-            <rect x={-260} y={-50} width={520} height={100} rx={50} fill="#fff" stroke={INK} strokeWidth={6} />
-            <text x={0} y={16} textAnchor="middle" fontFamily="Poppins" fontWeight={800} fontSize={40} fill={RED}>NO SPAM</text>
+            <rect x={-206} y={-50} width={412} height={100} rx={50} fill="#fff" stroke={INK} strokeWidth={6} />
+            <text x={0} y={15} textAnchor="middle" fontFamily="Poppins" fontWeight={800} fontSize={38} fill={RED}>NO SPAM</text>
           </g>
         </g>
         {/* boton Follow */}
@@ -494,14 +508,13 @@ const SceneFollow: React.FC = () => {
           <text x={0} y={20} textAnchor="middle" fontFamily="Poppins" fontWeight={800} fontSize={62} fill={BLUE}>DREXLO</text>
         </g>
         {/* oferta relevante en 3 checks */}
-        <Pop at={c1} damping={11}>{(p) => <CheckChip x={540} y={1120} p={p} label="RIGHT BUSINESSES" />}</Pop>
-        <Pop at={c2} damping={11}>{(p) => <CheckChip x={540} y={1248} p={p} label="REAL PROBLEMS" />}</Pop>
-        <Pop at={c3} damping={11}>{(p) => <CheckChip x={540} y={1376} p={p} label="RELEVANT OFFER" />}</Pop>
-        {/* flecha hacia el boton */}
+        <Pop at={c1} damping={11}>{(p) => <CheckChip x={610} y={1120} p={p} label="RIGHT BUSINESSES" />}</Pop>
+        <Pop at={c2} damping={11}>{(p) => <CheckChip x={610} y={1248} p={p} label="REAL PROBLEMS" />}</Pop>
+        <Pop at={c3} damping={11}>{(p) => <CheckChip x={610} y={1376} p={p} label="RELEVANT OFFER" />}</Pop>
+        {/* el boton late cuando llega el llamado a la accion */}
         {cta > 0.05 && (
-          <g opacity={Math.min(1, cta)}>
-            <path d="M 360 1180 Q 520 980 560 880" stroke={YELLOW} strokeWidth={16} fill="none" strokeLinecap="round" />
-            <path d="M 560 880 L 520 936 M 560 880 L 612 918" stroke={YELLOW} strokeWidth={16} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          <g transform="translate(680 760) scale(1.06)" opacity={Math.min(1, cta) * (0.5 + 0.5 * Math.abs(Math.sin(f / 8)))}>
+            <rect x={-285} y={-122} width={570} height={244} rx={122} fill="none" stroke={YELLOW} strokeWidth={16} />
           </g>
         )}
         <Character x={200} y={1330} s={0.92} {...CURIOSO} mouth="grin" brow={0.6} armR={148} armL={14} look={[0.8, -0.5]} blinkSeed={7} />
