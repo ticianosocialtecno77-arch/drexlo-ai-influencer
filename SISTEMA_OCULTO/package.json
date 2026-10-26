@@ -10,6 +10,8 @@
     "upgrade": "remotion upgrade"
   },
   "dependencies": {
+    "@fontsource/luckiest-guy": "^5.1.0",
+    "@fontsource/poppins": "^5.1.0",
     "@remotion/cli": "4.0.538",
     "@remotion/fonts": "^4.0.538",
     "@remotion/three": "^4.0.538",

@@ -21,6 +21,13 @@ import {
   AGENCIA_PREVIEW_DURATION,
   AGENCIA_PREVIEW_FPS,
 } from "./agencia/Scene1Hook";
+import {
+  AgenciaStyleframes,
+  AGENCIA_SF_DURATION,
+  AGENCIA_SF_FPS,
+} from "./agencia/Styleframes";
+import { ClientesIA } from "./ClientesIA";
+import { CIA_TOTAL_FRAMES, CIA_FPS } from "./clientesTimeline";
 
 // Pruebas de estilo: misma frase ("Descubre el secreto"), 3 estilos, 5 s cada una.
 // Render en la nube con coldframe:
@@ -71,6 +78,31 @@ export const RemotionRoot: React.FC = () => {
         component={AgenciaHookPreview}
         durationInFrames={AGENCIA_PREVIEW_DURATION}
         fps={AGENCIA_PREVIEW_FPS}
+        {...STYLE_SIZE}
+      />
+
+      {/* Styleframes: 3 direcciones de arte para elegir el look.
+          La prop "dir" elige: 0 = A (diorama), 1 = B (neon), 2 = C (ciudad de datos).
+          remotion still AgenciaStyleframes out/sf-A.png --props='{"dir":0}' */}
+      <Composition
+        id="AgenciaStyleframes"
+        component={AgenciaStyleframes}
+        durationInFrames={AGENCIA_SF_DURATION}
+        fps={AGENCIA_SF_FPS}
+        defaultProps={{ dir: 0 }}
+        {...STYLE_SIZE}
+      />
+
+      {/* DREXLO AGENCIA IA — short completo "AI Can Find Clients Your
+          Competitors Ignore" (45 s, 6 escenas). Reutiliza src/Cartoon.tsx
+          (El Curioso) y los tiempos reales de clientesTimeline.ts.
+          Stills:  remotion still ClientesIA out/stills/s1.png --frame=128 --scale=0.5
+          Render:  coldframe render ClientesIA --chunks 8 --name clientes-ia.mp4 */}
+      <Composition
+        id="ClientesIA"
+        component={ClientesIA}
+        durationInFrames={CIA_TOTAL_FRAMES}
+        fps={CIA_FPS}
         {...STYLE_SIZE}
       />
     </>
