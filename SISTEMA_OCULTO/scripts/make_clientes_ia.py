@@ -25,7 +25,8 @@ import sys
 
 import edge_tts
 
-VOICE = "en-US-AndrewNeural"
+# La voz se puede pasar por argumento: python make_clientes_ia.py en-US-GuyNeural
+VOICE = sys.argv[1] if len(sys.argv) > 1 else "en-US-AndrewNeural"
 # Prosodia por escena: (rate %, pitch). Arco: curiosidad grave al inicio,
 # ritmo rapido y energetico en los pasos, cierre seguro y algo mas brillante.
 PROSODY = {
