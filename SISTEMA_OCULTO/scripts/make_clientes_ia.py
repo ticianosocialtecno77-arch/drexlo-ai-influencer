@@ -37,8 +37,10 @@ PROSODY = {
     "step4": (36, -5),
     "ending": (32, -3),
 }
-TARGET_END = 44.4       # segundos: fin de la ultima escena (deja cola hasta 45.0)
-GAP = 0.32              # silencio entre escenas
+# Ritmo objetivo en palabras por minuto. Es lo que hace que la voz suene
+# apurada o no; la duracion del video es consecuencia, no causa.
+TARGET_WPM = 160        # explicador comodo y claro (antes: 177 = apurado)
+GAP = 0.25              # silencio entre escenas
 TAIL = 0.6              # cola final
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -270,23 +272,25 @@ def write_ts(scenes, words, total, combined_name, delta):
 
 def main():
     base_avg = sum(r for r, _ in PROSODY.values()) / len(PROSODY)
+    word_count = sum(len([t for t in txt.split() if t != "..."]) for _, _, txt in SEGMENTS)
     delta = 0
     best = None
     for attempt in range(5):
         combined, scenes, words, total, durations, silences = build(delta)
-        end_last = scenes[-1]["end"]
+        speech = sum(durations)
+        wpm = word_count / (speech / 60.0)
         print(f"[intento {attempt + 1}] voz={VOICE} rate medio=+{base_avg + delta:.0f}%  "
-              f"fin ultima escena={end_last:.3f}s  total={total:.3f}s")
+              f"ritmo={wpm:.0f} palabras/min (objetivo {TARGET_WPM})  total={total:.3f}s")
         for s, d in zip(scenes, durations):
             r, p = PROSODY[s["id"]]
             print(f"   {s['id']:7s} {s['start']:6.2f} -> {s['end']:6.2f}  ({d:5.2f}s)  "
                   f"rate=+{r + delta}% pitch={p}Hz  frases={len(s['phrases'])}")
         best = (combined, scenes, words, total, durations, silences, delta)
-        if abs(end_last - TARGET_END) <= 0.8:
+        if abs(wpm - TARGET_WPM) <= 3:
             break
-        # La duracion es ~inversa a la velocidad: ajustamos en velocidad, no en rate.
+        # El ritmo es proporcional a la velocidad de sintesis: ajustamos ahi.
         speed = 1 + (base_avg + delta) / 100.0
-        new_speed = speed * (end_last / TARGET_END)
+        new_speed = speed * (TARGET_WPM / wpm)
         new_avg = (new_speed - 1) * 100
         new_delta = int(round(new_avg - base_avg))
         new_delta = max(int(-base_avg) + 5, min(50 - int(base_avg), new_delta))
